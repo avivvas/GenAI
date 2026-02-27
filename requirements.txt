@@ -72,6 +72,7 @@ pandas==2.3.3
 parso==0.8.5
 pillow==12.1.0
 platformdirs==4.5.1
+plotly==6.5.2
 prompt_toolkit==3.0.52
 propcache==0.4.1
 protobuf==6.33.5
