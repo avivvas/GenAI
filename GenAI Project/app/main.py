@@ -1,12 +1,7 @@
 from dotenv import load_dotenv
 import os
 
-from .agents import MainAgent
-from .agents.main_agent import MainAgent
-from .agents.exit_advisor import ExitAdvisor
-from .agents.schedule_module.schedule_agent import ScheduleAgent
-from app.agents.info_agent import InfoAgent
-from .db.session import SessionLocal
+from .orchestration.orchestrator import Orchestrator
 #from .agents import get_next_three_available_slots
 
 def main():
@@ -20,26 +15,15 @@ def main():
     
     model_name = "gpt-4o-2024-11-20"
 
-
-    exit_advisor = ExitAdvisor(model=model_name)
-    schedule_agent = ScheduleAgent(
-        model=model_name
-    )
-    info_agent = InfoAgent()
-
-    agent = MainAgent(
-        model="gpt-4o-2024-11-20",
-        exit_advisor=exit_advisor,
-        schedule_agent=schedule_agent,
-        info_agent=info_agent,
-    )
+    orchestrator = Orchestrator(model_name="gpt-4o-2024-11-20")
 
     session_id = "user1"
 
     while True:
         user_input = input("You: ")
 
-        result = agent.invoke(user_input, session_id=session_id)
+        result = orchestrator.orchesrate_conversation_with_memory(
+            user_input, session_id=session_id)
 
         print("Agent:", result["response"])
 

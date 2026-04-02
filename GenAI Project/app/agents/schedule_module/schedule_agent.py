@@ -64,19 +64,6 @@ class ScheduleAgent:
             ),
         )
 
-    def _format_history(self, history_messages) -> str:
-        lines = []
-
-        for msg in history_messages:
-            if isinstance(msg, HumanMessage):
-                lines.append(f"User: {msg.content}")
-            elif isinstance(msg, AIMessage):
-                lines.append(f"Assistant: {msg.content}")
-            else:
-                lines.append(f"Other: {msg.content}")
-
-        return "\n".join(lines)
-
     def _create_tools(self):
         repository = self._repository
 
@@ -122,9 +109,8 @@ class ScheduleAgent:
 
         return [get_next_three_slots, book_slot]
 
-    def invoke(self, user_input: str, session_id: str, history_messages) -> str:
+    def invoke(self, user_input: str, session_id: str, history_text : str) -> str:
         current_state = self._state_store.get_state(session_id)
-        history_text = self._format_history(history_messages)
 
         result = self._agent.invoke({
             "messages": [
