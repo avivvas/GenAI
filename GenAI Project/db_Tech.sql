@@ -23,11 +23,11 @@ CREATE TABLE dbo.Schedule
 );
 GO
 
-DECLARE @StartDate DATE = '20240101',
-        @EndDate   DATE = '20241231';
+DECLARE @StartDate DATE = '20260101',
+        @EndDate   DATE = '20261231';
 
 ;WITH
--- Dates 2024
+-- Dates 2026
 Dates AS
 (
     SELECT @StartDate AS d
@@ -88,4 +88,12 @@ GO
 /* optional sanity check */
 SELECT * FROM dbo.Schedule ORDER BY ScheduleID;
 GO
+
+SELECT * FROM dbo.Schedule ORDER BY [date], [time];
+GO
+
+-- SELECT TOP 3 date, time
+--                FROM dbo.Schedule
+--                WHERE available = 1
+--                ORDER BY [date]
 

@@ -9,7 +9,10 @@ DEFAULT_SCHEDULE_STATE = {
     "booking_status": "none",      # none / pending / booked / rescheduling
     "suggested_slots": [],
     "selected_slot_id": None,
-    "missing_fields": [],
+    "booked_slot_id": None,
+    "booked_slot_date": None,
+    "booked_slot_time": None,
+    "last_action": None
 }
 
 

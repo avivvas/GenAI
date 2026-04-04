@@ -20,7 +20,7 @@ class Router:
                 "Definitions:\n"
                 "- EXIT_CANDIDATE: the user may be ending the conversation, saying goodbye, thanking and concluding, or indicating no further help is needed.\n"
                 "- SCHEDULE: the user wants to schedule, book, arrange, move, or ask for appointment availability.\n"
-                "- INFO: use this ONLY if the user is asking for factual information specifically about the company, such as the company's services, products, policies, business, team, opening hours, contact details, location, or other company-related information.\n"
+                "- INFO: use this if the user asks for factual information about the company, the open role, the job description, required skills, preferred qualifications, responsibilities, technologies, policies, location, contact details, or other company-related/job-related information.\n"
                 "- CONTINUE: any message that does not clearly belong to the other categories.\n\n"
 
                 "Very important rules for INFO:\n"

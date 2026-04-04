@@ -25,6 +25,11 @@ class Orchestrator:
         history = self._main_agent.get_history(session_id)
         full_convo = "\n".join([f"{type(msg).__name__}: {msg.content}" 
                                 for msg in history.messages if isinstance(msg, BaseMessage)])
+        
+        self._schedule_agent.update_schedule_state(
+                                            user_input=user_input, 
+                                            session_id=session_id, 
+                                            history_messages=history.messages[-6:])
 
         route_result = self._router.route(user_input, history.messages)
         print(f'route result: {route_result}')
@@ -52,7 +57,10 @@ class Orchestrator:
 
             response = self._schedule_agent.invoke(
             user_input=user_input,
-            history_text=full_convo,
+            session_id=session_id,
+            # Python slicing never throws an error if the range is out of bounds.
+            # It will take the last messages in the history up to last 6
+            history_messages=history.messages[-6:]
             )
 
             history.add_user_message(user_input)
