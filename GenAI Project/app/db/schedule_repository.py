@@ -8,6 +8,7 @@ class ScheduleRepository:
     def __init__(self):
         self._session_factory = SessionLocal
 
+        # Added in order to exclude such warnings from the output
         warnings.filterwarnings(
             "ignore",
             message=".*Unrecognized server version info.*",
