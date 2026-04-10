@@ -3,16 +3,19 @@ from copy import deepcopy
 
 DEFAULT_SCHEDULE_STATE = {
     "role": None,
-    "requested_date": None,
-    "requested_time": None,
-    "requested_from_time": None,
-    "booking_status": "none",      # none / pending / booked / rescheduling
+
     "suggested_slots": [],
-    "selected_slot_id": None,
+
     "booked_slot_id": None,
     "booked_slot_date": None,
     "booked_slot_time": None,
-    "last_action": None
+
+    "booking_status": "none",  # none | pending | booked | rescheduling
+
+    "last_action": None,
+
+    "last_offered_start_date": None,
+    "last_offered_start_time": None,
 }
 
 

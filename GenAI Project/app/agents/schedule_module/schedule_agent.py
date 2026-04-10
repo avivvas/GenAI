@@ -13,150 +13,123 @@ from .schedule_state import ScheduleStateStore
 
 class ScheduleAgent:
     def __init__(self, model: str):
+
         self.llm = ChatOpenAI(model=model, temperature=0)
         self._repository = ScheduleRepository()
         self._state_store = ScheduleStateStore()
 
-        # ---------------------------
-        # PASSIVE STATE UPDATE CHAIN
-        # ---------------------------
-        self._state_parser = JsonOutputParser()
-
-        state_update_prompt = ChatPromptTemplate.from_messages([
-            (
-                "system",
-                "You update scheduling state for a company interview assistant.\n\n"
-
-                "IMPORTANT:\n"
-                "- This is a PASSIVE step.\n"
-                "- Do NOT perform scheduling actions.\n"
-                "- Do NOT assume bookings or slot availability.\n"
-                "- Do NOT generate a user-facing response.\n\n"
-
-                "Your job is ONLY to update the scheduling state based on:\n"
-                "- the current state\n"
-                "- the latest user message\n"
-                "- optional supporting conversation context\n\n"
-
-                "The scheduling state is the PRIMARY source of truth.\n"
-                "History is only supporting context.\n\n"
-
-                "Valid roles in the database:\n"
-                "- Python Dev\n"
-                "- Sql Dev\n"
-                "- Analyst\n"
-                "- ML\n\n"
-
-                "Normalize role names, for example:\n"
-                '- "python developer" → "Python Dev"\n'
-                '- "sql developer" → "Sql Dev"\n'
-                '- "data analyst" → "Analyst"\n'
-                '- "ml engineer" → "ML"\n\n'
-
-                "Rules:\n"
-                "1. Only update fields that can be clearly inferred.\n"
-                "2. Keep existing values unless clearly changed.\n"
-                "3. Do not invent slot IDs or bookings.\n"
-                "4. If user indicates rescheduling → set booking_status='rescheduling'.\n"
-                "5. If user selects a slot (e.g. 'first one') → set selected_slot_id if possible.\n"
-                "6. If input unrelated → return state unchanged.\n\n"
-
-                "Return ONLY JSON:\n"
-                "{{\n"
-                '  "updated_state": {{\n'
-                '    "role": string or null,\n'
-                '    "requested_date": string or null,\n'
-                '    "requested_time": string or null,\n'
-                '    "requested_from_time": string or null,\n'
-                '    "booking_status": "none" | "pending" | "booked" | "rescheduling",\n'
-                '    "suggested_slots": [\n'
-                '      {{"ScheduleID": int, "date": "YYYY-MM-DD", "time": "HH:MM:SS", "position": string}}\n'
-                '    ],\n'
-                '    "selected_slot_id": int or null,\n'
-                '    "booked_slot_id": int or null,\n'
-                '    "booked_slot_date": string or null,\n'
-                '    "booked_slot_time": string or null,\n'
-                '    "last_action": string or null\n'
-                "  }}\n"
-                "}}"
-            ),
-            (
-                "user",
-                "Current state:\n{current_state}\n\n"
-                "Recent context:\n{history_text}\n\n"
-                "User message:\n{user_input}"
-            )
-        ])
-
-        self._state_update_chain = state_update_prompt | self.llm | self._state_parser
-
-        # ---------------------------
-        # ACTIVE SCHEDULING AGENT
-        # ---------------------------
         tools = self._create_tools()
 
         self._agent = create_agent(
             model=self.llm,
             tools=tools,
             system_prompt = (
-                "You are a scheduling assistant for interviews.\n\n"
+                "You are a scheduling assistant for interview coordination.\n\n"
 
-                "IMPORTANT:\n"
-                "- This is the ACTIVE scheduling step.\n"
-                "- The scheduling state is the PRIMARY source of truth.\n"
-                "- Use conversation history only as supporting context when needed.\n"
-                "- Use tools for all database actions.\n"
-                "- Do not invent slots, bookings, releases, dates, or times.\n\n"
+                "Your job is to manage interview scheduling based on:\n"
+                "- the current scheduling state\n"
+                "- the conversation history\n"
+                "- the latest user message\n"
+                "- the provided current date and current time\n\n"
 
-                "Valid interview roles in the database are exactly:\n"
+                "The scheduling state is the PRIMARY source of truth.\n"
+                "Use the conversation history only as supporting context when needed.\n\n"
+
+                "You MUST generate a user-facing response.\n\n"
+
+                "Valid interview roles are exactly:\n"
                 "- Python Dev\n"
                 "- Sql Dev\n"
                 "- Analyst\n"
                 "- ML\n\n"
 
-                "If role wording differs, interpret it into the closest valid database role.\n"
-                "Examples:\n"
-                '- "python developer" -> "Python Dev"\n'
-                '- "sql developer" -> "Sql Dev"\n'
-                '- "data analyst" -> "Analyst"\n'
-                '- "ml engineer" -> "ML"\n\n'
+                "Normalize role names when needed.\n\n"
 
-                "Scheduling rules:\n"
-                "1. If the role is missing, ask the user for it.\n"
-                "2. If the role exists and the user asks for available slots, fetch up to 3 relevant slots.\n"
-                "3. If the user explicitly requested a date/time or a starting date/time, use that information.\n"
-                "4. If the user did NOT explicitly request a date/time, use the provided current date/time as the default starting point for the search.\n"
-                "5. Do NOT treat the default current date/time as user-provided information.\n"
-                "6. Do NOT overwrite scheduling state fields with default current date/time unless the user explicitly requested them.\n"
-                "7. If the user selected a slot, book it.\n"
-                "8. If the user wants to reschedule and a slot is already booked, release the previous slot first, then book the new one.\n"
-                "9. Only update state fields that changed because of the current scheduling action.\n\n"
+                "Deduce the role from any part of the conversation, both from the assistant and the user responses"
 
-                "Return ONLY valid JSON in this format:\n"
-                "{\n"
-                '  "response": "final text for the user",\n'
-                '  "schedule_update": {\n'
+                "----------------------------------------\n"
+                "SCHEDULING BEHAVIOR\n"
+                "----------------------------------------\n\n"
+
+                "1. FIRST TIME SCHEDULING\n"
+                "- If no slots were suggested yet, fetch the next 3 available slots for the role.\n"
+                "- If no explicit date/time was requested, use the provided current date and time as the starting point.\n\n"
+
+                "2. USER REQUESTED SPECIFIC TIME\n"
+                "- If the user requested a specific date and time:\n"
+                "  - Check if that slot is available.\n"
+                "  - If available → book it.\n"
+                "  - If not available → offer the next available slots after that time.\n\n"
+
+                "3. USER SELECTS A SLOT\n"
+                "- If the user selects one of the suggested slots (e.g., 'first one', '09:00'):\n"
+                "  - Book that slot.\n\n"
+
+                "4. USER REJECTS A SLOT\n"
+                "- If the user rejects a proposed slot:\n"
+                "  - Search again starting AFTER that rejected time.\n"
+                "  - Offer the next available slots.\n\n"
+
+                "5. RESCHEDULING\n"
+                "- If a slot is already booked and the user wants to change it:\n"
+                "  - Release the previous slot first.\n"
+                "  - Then find and book a new one.\n\n"
+
+                #"6. MISSING ROLE\n"
+                #"- If the role is missing, ask the user for it.\n"
+                #"- Do NOT call scheduling tools until the role is known.\n\n"
+
+                "----------------------------------------\n"
+                "IMPORTANT RULES\n"
+                "----------------------------------------\n\n"
+
+                "- If the user needs available slots, you must call the availability tool in the current turn and return the actual slots in your response."
+
+                "- Do not say that you will check later."
+                "- Do not say 'please hold on'."
+                "- Do not return an intermediate message."
+                "- Always complete the scheduling action in the same response when tool information is needed."
+                
+                "- ALWAYS use tools for database actions.\n"
+                "- NEVER invent slots or availability.\n"
+                "- NEVER invent booking success.\n"
+                "- ALWAYS provide a clear and natural user-facing response.\n"
+                "- Use a helpful, recruiter-style tone.\n\n"
+
+                "- The start date and time must be explicitly determined:\n"
+                "  - Use user-requested date/time if provided\n"
+                "  - Otherwise use the provided current date/time\n"
+                "  - If user rejected a slot, use that slot's time as the new starting point\n\n"
+
+                "- Do NOT store default current time as user preference.\n\n"
+
+                "----------------------------------------\n"
+                "OUTPUT FORMAT\n"
+                "----------------------------------------\n\n"
+
+                "Return ONLY valid JSON:\n"
+                "{{\n"
+                '  "response": "message to the user",\n'
+                '  "schedule_update": {{\n'
                 '    "role": string or null,\n'
-                '    "requested_date": string or null,\n'
-                '    "requested_time": string or null,\n'
-                '    "requested_from_time": string or null,\n'
-                '    "booking_status": "none" | "pending" | "booked" | "rescheduling",\n'
                 '    "suggested_slots": [\n'
-                '      {"ScheduleID": int, "date": "YYYY-MM-DD", "time": "HH:MM:SS", "position": string}\n'
+                '      {{"ScheduleID": int, "date": "YYYY-MM-DD", "time": "HH:MM:SS", "position": string}}\n'
                 '    ],\n'
-                '    "selected_slot_id": int or null,\n'
                 '    "booked_slot_id": int or null,\n'
                 '    "booked_slot_date": string or null,\n'
                 '    "booked_slot_time": string or null,\n'
-                '    "last_action": string or null\n'
-                "  }\n"
-                "}"
+                '    "booking_status": "none" | "pending" | "booked" | "rescheduling",\n'
+                '    "last_action": string or null,\n'
+                '    "last_offered_start_date": string or null,\n'
+                '    "last_offered_start_time": string or null\n'
+                "  }}\n"
+                "}}\n\n"
+
+                "Do not include any text outside the JSON."
+
             )
         )
 
-    # ---------------------------
-    # TOOLS
-    # ---------------------------
     def _create_tools(self):
 
         repository = self._repository
@@ -210,9 +183,6 @@ class ScheduleAgent:
 
         return [get_next_three_slots, book_slot, release_slot]
 
-    # ---------------------------
-    # HELPERS
-    # ---------------------------
     def _format_history(self, history_messages):
         lines = []
         for m in history_messages:
@@ -221,27 +191,10 @@ class ScheduleAgent:
             elif isinstance(m, AIMessage):
                 lines.append(f"Assistant: {m.content}")
         return "\n".join(lines)
+    
+    def get_state(self, session_id) -> dict:
+        return self._state_store.get_state(session_id=session_id)
 
-    # ---------------------------
-    # PASSIVE UPDATE
-    # ---------------------------
-    def update_schedule_state(self, user_input: str, session_id: str, history_messages):
-        current_state = self._state_store.get_state(session_id)
-
-        result = self._state_update_chain.invoke({
-            "current_state": json.dumps(current_state),
-            "history_text": self._format_history(history_messages),
-            "user_input": user_input,
-        })
-
-        updated_state = result["updated_state"]
-        self._state_store.set_state(session_id, updated_state)
-
-        return updated_state
-
-    # ---------------------------
-    # ACTIVE SCHEDULING
-    # ---------------------------
     def invoke(self, user_input: str, session_id: str, history_messages):
         current_state = self._state_store.get_state(session_id)
 
@@ -268,6 +221,7 @@ class ScheduleAgent:
         parsed = json.loads(result["messages"][-1].content)
 
         updated_state = parsed["schedule_update"]
+        print(f'\n\nschedule state: {updated_state}\n\n')
         self._state_store.set_state(session_id, updated_state)
 
         return parsed["response"]

@@ -27,7 +27,7 @@ def main():
 
         print("Agent:", result["response"])
 
-        if result["should_exit"]:
+        if result["should_end"]:
             break  
 
 

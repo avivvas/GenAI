@@ -1,6 +1,8 @@
 from PyPDF2 import PdfReader
 import chromadb
 from openai import OpenAI
+from langchain_core.messages import BaseMessage
+
 class InfoAgent:
     def __init__(self, model_name : str):
 
@@ -46,7 +48,7 @@ class InfoAgent:
 
         return chunks
 
-    def invoke(self, user_input : str):
+    def invoke(self, user_input : str, history_messages):
         
         user_input_embedding = self.openai_client.embeddings.create(
             input = [user_input],
@@ -62,26 +64,60 @@ class InfoAgent:
 
         context = "\n".join(retrived_docs)
 
-        prompt = f"""
-                You are answering a candidate's question about the company or the Python Developer role.
+        history_text = "\n".join([f"{type(msg).__name__}: {msg.content}" 
+                                for msg in history_messages if isinstance(msg, BaseMessage)])      
+    
 
-                Answer using ONLY the context below.
-                Be concise, specific, and recruiter-like.
-                Do not imply on any external source or document that you rely on, just answer naturally based on your knowledge according to these documents.
-                If the context does not explicitly contain the answer, say so clearly and do not guess.
-                Context:
-                {context}
-                Question:
-                {user_input}
-                """
+        prompt = f"""
+                "You are a concise recruitment assistant in a conversation with a job candidate.\n\n"
+
+                "Your task is to generate the next message to the candidate.\n\n"
+
+                "You receive:\n"
+                "- job-related context\n"
+                "- conversation history\n"
+                "- the latest user message\n\n"
+
+                "Use the provided context as the source of truth for facts about the role and company.\n"
+                "Use the conversation history and latest user message to continue the conversation naturally.\n\n"
+
+                "Your goals are:\n"
+                "- answer the candidate's questions using the provided context\n"
+                "- ask a short follow-up question only when necessary to better understand the candidate's background\n"
+                "- keep the conversation focused and efficient\n\n"
+
+                "Important rules:\n"
+                "- Do not guess facts that are not explicitly supported by the provided context.\n"
+                "- Do not drill into technical implementation details unless the user explicitly asks about them.\n"
+                "- Do not ask broad or exploratory questions.\n"
+                "- Ask at most one focused follow-up question at a time.\n"
+                "- Prefer questions about high-level qualifications (e.g., experience, technologies, general skills) rather than detailed project specifics.\n"
+                "- If the user's message already provides useful information, acknowledge it briefly and ask only the single most relevant missing question.\n"
+                "- If no follow-up question is needed, respond briefly without asking one.\n\n"
+
+                "Style guidelines:\n"
+                "- be concise\n"
+                "- be professional and friendly\n"
+                "- avoid long or generic answers\n"
+                "- avoid multiple questions in one message\n\n"
+
+                "Return only the message that should be sent to the candidate."
+                        Job-related context:
+                        {context}
+                        Latest user message:
+                        {user_input}
+                        Conversation History:
+                        {history_text}
+                        """
 
         response = self.openai_client.responses.create(
             model=self.agent_model,
             input=prompt
         )
 
-        return response.output_text.strip()
+        #print(response)
 
+        return response.output_text
 
 
 

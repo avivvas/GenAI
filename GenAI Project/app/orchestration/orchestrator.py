@@ -1,10 +1,9 @@
 # app/agents/main_agent.py
 
 from typing import Any
+from langchain_community.chat_message_histories import ChatMessageHistory
 
-from langchain_core.messages import BaseMessage
 from app.agents import MainAgent, ExitAdvisor, ScheduleAgent, InfoAgent
-from .router import Router
 
 
 class Orchestrator:
@@ -17,77 +16,52 @@ class Orchestrator:
         self._schedule_agent = ScheduleAgent(model=model_name)
         self._info_agent = InfoAgent(model_name=model_name)
 
-        self._router = Router(model_name)
+        self._store: dict[str, ChatMessageHistory] = {}
+
+    def get_history(self, session_id: str) -> ChatMessageHistory:
+        if session_id not in self._store:
+            self._store[session_id] = ChatMessageHistory()
+        return self._store[session_id]
+
+    def reset_session(self, session_id: str) -> None:
+        self._store.pop(session_id, None)
 
 
     def orchesrate_conversation_with_memory(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
 
-        history = self._main_agent.get_history(session_id)
-        full_convo = "\n".join([f"{type(msg).__name__}: {msg.content}" 
-                                for msg in history.messages if isinstance(msg, BaseMessage)])
+        should_end = False
         
-        self._schedule_agent.update_schedule_state(
-                                            user_input=user_input, 
-                                            session_id=session_id, 
-                                            history_messages=history.messages[-6:])
-
-        route_result = self._router.route(user_input, history.messages)
-        print(f'route result: {route_result}')
+        history = self.get_history(session_id=session_id)
+        history.add_user_message(user_input)
+        history_messages = history.messages
         
-        if route_result == "EXIT_CANDIDATE":
+        label = self._main_agent.invoke(user_input, history_messages)
 
-            exit_result = self._exit_advisor.invoke(
-                user_input=user_input,
-                history_text=full_convo
-            )
+        print(label)
 
-            if exit_result["should_exit"]:
-                exit_response = exit_result["response"]
+        if label == "continue":
+            response = self._info_agent.invoke(user_input, history_messages)
 
-                history.add_user_message(user_input)
-                history.add_ai_message(exit_response)
+        elif label == "schedule":
+            response = self._schedule_agent.invoke(user_input, session_id, history_messages)
 
-                return {
-                    "response": exit_response,
-                    "should_exit": True,
-                    "route": "EXIT",
-                }
+        elif label == "end":
+            exit_result = self._exit_advisor.should_end(user_input, history_messages)
+            
+            if exit_result["should_end"]:
+                response = self._exit_advisor.generate_end_message(
+                    end_type=exit_result["end_reason"],
+                    history_messages=history_messages
+                )
+                should_end = True
+            else:
+                # fallback if main agent predicted end but exit advisor disagrees
+                response = self._info_agent.invoke(user_input, history_messages=history_messages)
 
-        if route_result == "SCHEDULE":
+        history = self.get_history(session_id=session_id)
+        history.add_ai_message(response)
 
-            response = self._schedule_agent.invoke(
-            user_input=user_input,
-            session_id=session_id,
-            # Python slicing never throws an error if the range is out of bounds.
-            # It will take the last messages in the history up to last 6
-            history_messages=history.messages[-6:]
-            )
-
-            history.add_user_message(user_input)
-            history.add_ai_message(response)
-
-            return {
-                "response": response,
-                "should_exit": False,
-                "route": "SCHEDULE",
-            }
-
-        if route_result == "INFO":
-
-            response = self._info_agent.invoke(user_input)
-
-            history.add_user_message(user_input)
-            history.add_ai_message(response)
-
-            return {
-                "response": response,
-                "should_exit": False,
-                "route": "INFO",
-            }
-
-        response = self._main_agent.invoke(user_input, session_id)
         return {
-            "response": response,
-            "should_exit": False,
-            "route": "CONTINUE",
-        }
+                "response": response,
+                "should_end": should_end,
+               }
