@@ -1,1 +1,4 @@
-#from .agents import MainAgent
+from .agents import MAIN_AGENT_SYSTEM_PROMPT
+from .config import ALL_AGENTS_MODEL_NAME
+
+__all__ = ["MAIN_AGENT_SYSTEM_PROMPT", "ALL_AGENTS_MODEL_NAME"]

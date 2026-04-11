@@ -1,9 +1,7 @@
-from .main_agent import MainAgent
+from .main_agent import MainAgent, MAIN_AGENT_SYSTEM_PROMPT
 from .schedule_module.schedule_agent import ScheduleAgent
 from .info_agent import InfoAgent
 from .exit_advisor import ExitAdvisor
-# from .schedule_agent import get_next_three_available_slots
 
 
-# __all__ = ["MainAgent", "get_next_three_available_slots"]
-__all__ = ["MainAgent", "ScheduleAgent", "InfoAgent", "ExitAdvisor"]
+__all__ = ["MainAgent", "ScheduleAgent", "InfoAgent", "ExitAdvisor", "MAIN_AGENT_SYSTEM_PROMPT"]

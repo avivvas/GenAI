@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
 import os
 
+from .config import ALL_AGENTS_MODEL_NAME
 from .orchestration.orchestrator import Orchestrator
-#from .agents import get_next_three_available_slots
 
 def main():
 
@@ -13,9 +13,7 @@ def main():
     openai_key = os.getenv("OPENAI_API_KEY")
     print(openai_key[:5])  # Just to check, don't print the full key!
     
-    model_name = "gpt-4o-2024-11-20"
-
-    orchestrator = Orchestrator(model_name="gpt-4o-2024-11-20")
+    orchestrator = Orchestrator(model_name=ALL_AGENTS_MODEL_NAME)
 
     session_id = "user1"
 
