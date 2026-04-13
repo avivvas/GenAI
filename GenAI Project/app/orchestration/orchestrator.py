@@ -1,20 +1,16 @@
-# app/agents/main_agent.py
-
 from typing import Any
 from langchain_community.chat_message_histories import ChatMessageHistory
 
 from app.agents import MainAgent, ExitAdvisor, ScheduleAgent, InfoAgent
+from app.config import ALL_AGENTS_MODEL_NAME, EXIT_ADVISOR_AGENT_FINE_TUNED_MODEL
 
 
 class Orchestrator:
-    def __init__(
-        self,
-        model_name: str,
-    ):
-        self._main_agent = MainAgent(model=model_name)
-        self._exit_advisor = ExitAdvisor(model=model_name)
-        self._schedule_agent = ScheduleAgent(model=model_name)
-        self._info_agent = InfoAgent(model_name=model_name)
+    def __init__(self):
+        self._main_agent = MainAgent(model=ALL_AGENTS_MODEL_NAME)
+        self._exit_advisor = ExitAdvisor(model=EXIT_ADVISOR_AGENT_FINE_TUNED_MODEL)
+        self._schedule_agent = ScheduleAgent(model=ALL_AGENTS_MODEL_NAME)
+        self._info_agent = InfoAgent(model_name=ALL_AGENTS_MODEL_NAME)
 
         self._store: dict[str, ChatMessageHistory] = {}
 
@@ -47,13 +43,13 @@ class Orchestrator:
 
         elif label == "end":
             exit_result = self._exit_advisor.should_end(user_input, history_messages)
-            
-            if exit_result["should_end"]:
+            label = exit_result
+
+            if label == "end":
                 response = self._exit_advisor.generate_end_message(
-                    end_type=exit_result["end_reason"],
+                    user_input=user_input,
                     history_messages=history_messages
                 )
-                should_end = True
             else:
                 # fallback if main agent predicted end but exit advisor disagrees
                 response = self._info_agent.invoke(user_input, history_messages=history_messages)
@@ -63,5 +59,5 @@ class Orchestrator:
 
         return {
                 "response": response,
-                "should_end": should_end,
+                "label": label,
                }

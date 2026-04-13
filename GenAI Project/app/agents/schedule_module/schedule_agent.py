@@ -45,7 +45,7 @@ class ScheduleAgent:
 
                 "Normalize role names when needed.\n\n"
 
-                "Deduce the role from any part of the conversation, both from the assistant and the user responses"
+                "Deduce the role from any part of the conversation, both from the assistant and the user responses\n\n"
 
                 "----------------------------------------\n"
                 "SCHEDULING BEHAVIOR\n"
@@ -126,6 +126,8 @@ class ScheduleAgent:
                 "}}\n\n"
 
                 "Do not include any text outside the JSON."
+                "Do NOT wrap the JSON in triple backticks (```).\n"
+                "Do NOT include markdown formatting.\n"
 
             )
         )

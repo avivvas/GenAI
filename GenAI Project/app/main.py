@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import os
 
-from .config import ALL_AGENTS_MODEL_NAME
 from .orchestration.orchestrator import Orchestrator
 
 def main():
@@ -13,7 +12,7 @@ def main():
     openai_key = os.getenv("OPENAI_API_KEY")
     print(openai_key[:5])  # Just to check, don't print the full key!
     
-    orchestrator = Orchestrator(model_name=ALL_AGENTS_MODEL_NAME)
+    orchestrator = Orchestrator()
 
     session_id = "user1"
 
@@ -25,8 +24,8 @@ def main():
 
         print("Agent:", result["response"])
 
-        if result["should_end"]:
-            break  
+        if result["label"] == "end":
+            break
 
 
 if __name__ == '__main__':

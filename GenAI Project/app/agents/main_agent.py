@@ -44,6 +44,7 @@ This includes cases where:
 Return "end" when:
 - the user clearly agrees to a specific interview date and time
 - the user explicitly confirms a proposed interview slot
+- the user proposes or confirms another specific interview date and time that can be used for booking\n
 - the user clearly indicates they do not want to continue the conversation
   (for example: "no thanks", "not interested", "stop", "bye")
 

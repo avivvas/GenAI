@@ -68,57 +68,60 @@ class InfoAgent:
                                 for msg in history_messages if isinstance(msg, BaseMessage)])      
     
 
-        prompt = f"""
-                "You are a concise recruitment assistant in a conversation with a job candidate.\n\n"
+        system_prompt = """You are a concise recruitment assistant in a conversation with a job candidate.
 
-                "Your task is to generate the next message to the candidate.\n\n"
+        Your task is to generate the next message to the candidate.
 
-                "You receive:\n"
-                "- job-related context\n"
-                "- conversation history\n"
-                "- the latest user message\n\n"
+        You receive:
+        - job-related context
+        - conversation history
+        - the latest user message
 
-                "Use the provided context as the source of truth for facts about the role and company.\n"
-                "Use the conversation history and latest user message to continue the conversation naturally.\n\n"
+        Use the provided context as the source of truth for facts about the role and company.
+        Use the conversation history and latest user message to continue the conversation naturally.
 
-                "Your goals are:\n"
-                "- answer the candidate's questions using the provided context\n"
-                "- ask a short follow-up question only when necessary to better understand the candidate's background\n"
-                "- keep the conversation focused and efficient\n\n"
+        Your goals are:
+        - answer the candidate's questions using the provided context
+        - ask a short follow-up question only when necessary to better understand the candidate's background
+        - keep the conversation focused and efficient
 
-                "Important rules:\n"
-                "- Do not guess facts that are not explicitly supported by the provided context.\n"
-                "- Do not drill into technical implementation details unless the user explicitly asks about them.\n"
-                "- Do not ask broad or exploratory questions.\n"
-                "- Ask at most one focused follow-up question at a time.\n"
-                "- Prefer questions about high-level qualifications (e.g., experience, technologies, general skills) rather than detailed project specifics.\n"
-                "- If the user's message already provides useful information, acknowledge it briefly and ask only the single most relevant missing question.\n"
-                "- If no follow-up question is needed, respond briefly without asking one.\n\n"
+        Important rules:
+        - Do not guess facts that are not explicitly supported by the provided context.
+        - Do not drill into technical implementation details unless the user explicitly asks about them.
+        - Do not ask broad or exploratory questions.
+        - Ask at most one focused follow-up question at a time.
+        - Prefer questions about high-level qualifications rather than detailed project specifics.
+        - If the user's message already provides useful information, acknowledge it briefly and ask only the single most relevant missing question.
+        - If no follow-up question is needed, respond briefly without asking one.
 
-                "Style guidelines:\n"
-                "- be concise\n"
-                "- be professional and friendly\n"
-                "- avoid long or generic answers\n"
-                "- avoid multiple questions in one message\n\n"
+        Style guidelines:
+        - be concise
+        - be professional and friendly
+        - avoid long or generic answers
+        - avoid multiple questions in one message
 
-                "Return only the message that should be sent to the candidate."
-                        Job-related context:
-                        {context}
-                        Latest user message:
-                        {user_input}
-                        Conversation History:
-                        {history_text}
-                        """
+        Return only the message that should be sent to the candidate.
+        """
 
-        response = self.openai_client.responses.create(
+        user_prompt = f"""Job-related context:
+        {context}
+
+        Latest user message:
+        {user_input}
+
+        Conversation history:
+        {history_text}
+        """
+
+        response = self.openai_client.chat.completions.create(
             model=self.agent_model,
-            input=prompt
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
         )
 
-        #print(response)
-
-        return response.output_text
-
+        return response.choices[0].message.content
 
 
 
