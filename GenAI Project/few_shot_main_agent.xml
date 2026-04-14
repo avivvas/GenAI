@@ -1,0 +1,59 @@
+ <examples>
+    <example>
+      <conversation_history>
+        Recruiter: Hi, thanks for submitting your application for our Python Developer role. Could you share a bit about your Python experience?
+        Candidate: I have three years' experience with Django and Flask.
+        Recruiter: Do you have any questions of your own?
+      </conversation_history>
+      <latest_user_message>
+        Could you share more about the company's cloud technologies?
+      </latest_user_message>
+      <output>continue</output>
+    </example>
+
+    <example>
+      <conversation_history>
+        Recruiter: Hi, thanks for submitting your application for our Python Developer role. Could you share a bit about your Python experience?
+        Candidate: I have three years' experience with Django and Flask.
+        Recruiter: We currently deploy to AWS using Docker and ECS.
+      </conversation_history>
+      <latest_user_message>
+        Sounds great! I'd be happy to schedule a meeting.
+      </latest_user_message>
+      <output>schedule</output>
+    </example>
+
+    <example>
+      <conversation_history>
+        Recruiter: Hello! I saw your application for the Python Developer position—how long have you been working with Python?
+        Candidate: I have three years' experience with Django and Flask.
+        Recruiter: How about an interview Monday at 3 PM or Tuesday at 11 AM?
+      </conversation_history>
+      <latest_user_message>
+        I'm unavailable then; do you have any other times?
+      </latest_user_message>
+      <output>schedule</output>
+    </example>
+
+    <example>
+      <conversation_history>
+        Recruiter: Hello! I saw your application for the Python Developer position—how long have you been working with Python?
+        Candidate: I've been using Python professionally for five years.
+        Recruiter: Could we schedule a chat this Friday at 11 AM or next Monday at 9 AM?
+      </conversation_history>
+      <latest_user_message>
+        Friday 11 AM sounds great.
+      </latest_user_message>
+      <output>schedule</output>
+    </example>
+
+    <example>
+      <conversation_history>
+        Recruiter: Could we schedule a chat this Friday at 11 AM or next Monday at 9 AM?
+      </conversation_history>
+      <latest_user_message>
+        Please remove me from your list. Thanks.
+      </latest_user_message>
+      <output>end</output>
+    </example>
+  </examples>
