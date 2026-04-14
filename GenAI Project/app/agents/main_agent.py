@@ -37,16 +37,21 @@ This includes cases where:
 - the user wants to schedule an interview
 - the user asks for available interview times
 - the user chooses a slot
+- the user explicitly confirms a proposed interview slot
+- the user proposes another specific interview date and/or time
 - the user rejects a proposed slot and needs another one
 - the user wants to reschedule or change an interview time
 
+Important:
+- Any conversation about selecting, confirming, proposing, changing, or booking an interview time must return "schedule".
+- Even if the user clearly agrees to a specific time, return "schedule" so the scheduling agent can check availability and/or book it.
+- Use "schedule" both when scheduling should be initiated proactively and when the user is already engaged in scheduling.
+
 3. END
 Return "end" when:
-- the user clearly agrees to a specific interview date and time
-- the user explicitly confirms a proposed interview slot
-- the user proposes or confirms another specific interview date and time that can be used for booking\n
 - the user clearly indicates they do not want to continue the conversation
-  (for example: "no thanks", "not interested", "stop", "bye")
+  (for example: "no thanks", "not interested", "stop", "bye", "remove me from your list")
+- the conversation should be politely closed because the candidate is not moving forward
 
 ----------------------------------------
 GUIDELINES
@@ -88,9 +93,9 @@ class MainAgent:
         self._main_agent_chain = main_agent_prompt | llm | StrOutputParser()
 
     def invoke(self, user_input : str, history_messages):
-        main_resposne = self._main_agent_chain.invoke({
+        main_response = self._main_agent_chain.invoke({
             "input": user_input,
             "history": history_messages,
         })
         
-        return main_resposne
+        return main_response

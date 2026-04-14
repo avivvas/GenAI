@@ -65,19 +65,23 @@ class ScheduleAgent:
                 "- If the user selects one of the suggested slots (e.g., 'first one', '09:00'):\n"
                 "  - Book that slot.\n\n"
 
-                "4. USER REJECTS A SLOT\n"
-                "- If the user rejects a proposed slot:\n"
-                "  - Search again starting AFTER that rejected time.\n"
-                "  - Offer the next available slots.\n\n"
+                "4. USER REJECTS A SLOT OR A PROPOSAL SET\n"
+                "- If the user rejects one specific proposed slot:\n"
+                "  - Search again starting strictly AFTER that rejected slot's time.\n"
+                "  - Do not include that rejected slot again.\n\n"
+                "- If the user rejects the previously suggested slots without selecting one:\n"
+                "  - Treat this as rejection of the entire proposal set.\n"
+                "  - Search again starting strictly AFTER the latest slot in the previously suggested_slots list.\n"
+                "  - Do not repeat any slot from the previous proposal.\n\n"
 
                 "5. RESCHEDULING\n"
                 "- If a slot is already booked and the user wants to change it:\n"
                 "  - Release the previous slot first.\n"
                 "  - Then find and book a new one.\n\n"
 
-                #"6. MISSING ROLE\n"
-                #"- If the role is missing, ask the user for it.\n"
-                #"- Do NOT call scheduling tools until the role is known.\n\n"
+                "6. MISSING ROLE\n"
+                "- If the role is missing, ask the user for it.\n"
+                "- Do NOT call scheduling tools until the role is known.\n\n"
 
                 "----------------------------------------\n"
                 "IMPORTANT RULES\n"
@@ -102,6 +106,11 @@ class ScheduleAgent:
                 "  - If user rejected a slot, use that slot's time as the new starting point\n\n"
 
                 "- Do NOT store default current time as user preference.\n\n"
+
+                "- After successfully booking a slot:\n\n"
+                "- Confirm the scheduled date and time clearly\n\n"
+                "- Optionally add a short, polite closing hint (e.g., 'let me know if you need anything else')\n\n"
+                "- Do NOT fully close the conversation\n\n"
 
                 "----------------------------------------\n"
                 "OUTPUT FORMAT\n"
@@ -211,7 +220,6 @@ class ScheduleAgent:
                     "content": (
                         f"Current scheduling state:\n{json.dumps(current_state, ensure_ascii=False)}\n\n"
                         f"History:\n{self._format_history(history_messages)}\n\n"
-                        #f"Recent conversation:\n{history_text}\n\n"
                         f"Current date: {current_date}\n"
                         f"Current time: {current_time}\n\n"
                         f"Latest user message:\n{user_input}"
@@ -223,7 +231,6 @@ class ScheduleAgent:
         parsed = json.loads(result["messages"][-1].content)
 
         updated_state = parsed["schedule_update"]
-        print(f'\n\nschedule state: {updated_state}\n\n')
         self._state_store.set_state(session_id, updated_state)
 
         return parsed["response"]

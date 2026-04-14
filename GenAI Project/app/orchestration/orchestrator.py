@@ -33,8 +33,6 @@ class Orchestrator:
         
         label = self._main_agent.invoke(user_input, history_messages)
 
-        print(label)
-
         if label == "continue":
             response = self._info_agent.invoke(user_input, history_messages)
 

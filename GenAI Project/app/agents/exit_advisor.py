@@ -7,14 +7,12 @@ EXIT_ADVISOR_SYSTEM_PROMPT = """You are an exit advisor in a recruitment convers
 Your task is to determine whether the conversation should continue or end.
 
 Use these rules:
-- Return "end" if the user clearly agreed to a specific interview date and time
 - Return "end" if the user clearly indicates they do not want to continue
 - Return "end" if the candidate is clearly not qualified and the conversation should be closed politely
 - Otherwise return "continue"
 
 Guidelines:
 - Base your decision only on the conversation history and the latest user message
-- If the user clearly confirms a proposed interview slot, return "end"
 - If the user clearly disengages (for example: "stop", "not interested", "remove me", "bye"), return "end"
 - If the conversation still requires clarification, follow-up, or scheduling coordination, return "continue"
 
@@ -37,21 +35,6 @@ You receive:
 Your task:
 - Infer the appropriate closing scenario from the conversation history and the latest user message
 - Then write the final closing message accordingly
-
-Possible closing scenarios:
-1. interview_confirmed
-2. user_disengaged
-3. not_qualified
-
-----------------------------------------
-INTERVIEW CONFIRMATION RULES
-----------------------------------------
-
-If the conversation shows that an interview was clearly confirmed:
-- Identify the confirmed interview date and time from the conversation history and the latest user message
-- The confirmed time is the one the user explicitly agreed to
-- If multiple times are mentioned, use ONLY the final agreed time
-- If the exact date and time cannot be clearly identified, do NOT guess; instead confirm the interview without mentioning the time
 
 ----------------------------------------
 USER DISENGAGED
