@@ -5,8 +5,6 @@ from .orchestration.orchestrator import Orchestrator
 
 def main():
 
-    #get_next_three_available_slots()
-
     load_dotenv()  # Loads variables from .env
 
     openai_key = os.getenv("OPENAI_API_KEY")

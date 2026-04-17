@@ -3,10 +3,12 @@ import chromadb
 from openai import OpenAI
 from langchain_core.messages import BaseMessage
 
+from app.paths import DATA_DIR
+
 class InfoAgent:
     def __init__(self, model_name : str):
 
-        company_info_file_name = 'Python Developer Job Description.pdf'
+        company_info_file_name = DATA_DIR/'Python Developer Job Description.pdf'
         # Extract text from PDF
         reader = PdfReader(company_info_file_name)
         doc_text = "\n".join(page.extract_text() for page in reader.pages if page.extract_text())
@@ -24,8 +26,11 @@ class InfoAgent:
 
         embeddings = [list(d.embedding) for d in embeddings_response.data]
         
-        self.chroma_client = chromadb.Client() 
-        self.collection = self.chroma_client.create_collection(name="company_and_role_info")
+        self.chroma_client = chromadb.Client()
+        # creates collection if does not exist or gets it if exists
+        self.collection = self.chroma_client.get_or_create_collection(
+            name="company_and_role_info"
+        ) 
         self.collection.add(
             documents=chunks,
             embeddings=embeddings,
