@@ -24,8 +24,6 @@ class Orchestrator:
 
 
     def orchesrate_conversation_with_memory(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
-
-        should_end = False
         
         history = self.get_history(session_id=session_id)
         history.add_user_message(user_input)
