@@ -1,6 +1,6 @@
 <!-- PROJECT LOGO -->
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Logo" width="120" height="120">
+  <img src="GenAI_Project/data/robot-helps-human2.svg" alt="Logo" width="120" height="120">
 </p>
 
 <h1 align="center">GenAI Recruitment Assistant</h1>
