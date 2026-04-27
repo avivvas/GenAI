@@ -278,9 +278,7 @@ For major changes, please open an issue first to discuss what you would like to 
 
 ## License
 
-Distributed under the Spying Company License. See `LICENSE` for more information.
-
----
+This project is licensed under the MIT License - see the LICENSE file for details.
 <br></br>
 
 
