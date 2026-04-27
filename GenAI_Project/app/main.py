@@ -17,7 +17,7 @@ def main():
     while True:
         user_input = input("You: ")
 
-        result = orchestrator.orchesrate_conversation_with_memory(
+        result = orchestrator.orchestrate_conversation_with_memory(
             user_input, session_id=session_id)
 
         print("Agent:", result["response"])

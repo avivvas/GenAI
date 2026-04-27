@@ -1,0 +1,29 @@
+Name: (not provided)
+Phone: (not provided)
+
+--- Chat History ---
+
+User: Hello
+Assistant: Hello! How can I assist you with this Python Developer role?
+User:  I have 5 years experience
+Assistant: That's great to hear! Could you share a bit about your experience with Python frameworks, tools, or libraries mentioned in the role, such as Numpy, Pandas, or PyTorch?
+User: I have all of those skills
+Assistant: That's excellent to hear! Do you also have experience with any of the preferred qualifications, such as Django, Flask, data science, or cloud platforms like AWS or Google Cloud?
+User: Yes
+Assistant: Here are the next available interview slots for the Python Developer role:
+1. April 28, 2026, at 12:00 PM
+2. April 28, 2026, at 1:00 PM
+3. April 29, 2026, at 11:00 AM
+
+Please let me know which one works best for you!
+User: Do you have any free slots on Thursday?
+Assistant: Here are the available slots for Thursday, April 30, 2026, for the Python Developer role:
+1. 10:00 AM
+2. 11:00 AM
+3. 4:00 PM
+
+Please let me know which one works best for you!
+User: Let's meet at 10
+Assistant: Your interview for the Python Developer role has been successfully scheduled for Thursday, April 30, 2026, at 10:00 AM. Let me know if you need anything else!
+User: Bye, thank you
+Assistant: Thank you for your time! Wishing you the best of luck with your interview.

@@ -139,7 +139,7 @@ from app import Orchestrator
 
 orch = Orchestrator()
 
-result = orch.orchesrate_conversation_with_memory(
+result = orch.orchestrate_conversation_with_memory(
     "Hi, I'm interested in the Python developer role",
     session_id="123"
 )
@@ -178,7 +178,7 @@ A file containing the conversation and the user details as inserted in the UI wi
 ## Code Examples
 
 ```python
-def orchesrate_conversation_with_memory(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
+def orchestrate_conversation_with_memory(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
 
         should_end = False
         

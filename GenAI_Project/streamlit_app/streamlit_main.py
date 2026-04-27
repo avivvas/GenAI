@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
 import streamlit as st
 from app import Orchestrator
@@ -26,8 +27,14 @@ def _save_chat_history(name: str, phone: str, messages: list):
     with open(filename, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
 
-st.title("Oz and Aviv Spying Company")
-st.write("Agents at Work")
+
+col1, col2 = st.columns([1, 6])
+with col1:
+    BASE_DIR = Path(__file__).parent
+    logo_path = BASE_DIR / "logo_recruiting_agent.jpeg"
+    st.image(str(logo_path), width=120)
+with col2:
+    st.title("Recruiting Agent")
 
 st.markdown("<br></br>", unsafe_allow_html=True)
 
@@ -68,7 +75,7 @@ if prompt and not st.session_state.chat_ended:
     st.chat_message("user").write(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    result = st.session_state.orchestrator.orchesrate_conversation_with_memory(
+    result = st.session_state.orchestrator.orchestrate_conversation_with_memory(
                         prompt, session_id=st.session_state.session_id)
     response = result["response"]
 

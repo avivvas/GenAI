@@ -23,7 +23,7 @@ class Orchestrator:
         self._store.pop(session_id, None)
 
 
-    def orchesrate_conversation_with_memory(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
+    def orchestrate_conversation_with_memory(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
         
         history = self.get_history(session_id=session_id)
         history.add_user_message(user_input)

@@ -1,0 +1,23 @@
+Name: Aviv Vasilkovsky
+Phone: 0503377990
+
+--- Chat History ---
+
+User: Hello
+Assistant: Hello! How can I assist you with the Python Developer role?
+User: I have 5 years experience
+Assistant: Thank you for sharing your experience. Could you briefly highlight your expertise with Python, such as working with data processing pipelines or machine learning algorithms?
+User: I have all of those skills
+Assistant: That's great to hear! Could you also share if you've worked with any popular Python frameworks like Django, Flask, or Pyramid?
+User: yes
+Assistant: Thanks for confirming! Have you had any experience with cloud platforms like AWS, Google Cloud, or Azure?
+User: yes
+Assistant: Thank you for sharing your experience! Here are the next available interview slots for the Python Developer role:
+
+1. April 28, 2026, at 12:00 PM
+2. April 28, 2026, at 1:00 PM
+3. April 29, 2026, at 11:00 AM
+
+Please let me know which one works best for you.
+User: I will contact you later
+Assistant: Thank you for letting me know. Feel free to reach out whenever you're ready, and have a great day!
